@@ -1,41 +1,40 @@
 <template>
-    <div class="card">
-        <div class="card-body">
-            <h3 class="card-title">Clientes</h3>
-            <div v-if="openTable">
-                <p class="card-text">
-                    <Table/>
-                </p>
-                <a href="#" class="btn btn-primary" @click="crear">Crear Cliente</a>
-            </div>
-            <div v-if="openForm">
-                <Form/>
-            </div>
-
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">Clientes</h3>
+        <div v-if="openTable">
+            <p class="card-text">
+                <Table :refresh="refresh"/>
+            </p>
+            <a href="#" class="btn btn-primary" @click="crear">Crear Cliente</a>
+        </div>
+        <div v-if="openForm">
+            <Form @refresh="refresh = !refresh" />
         </div>
     </div>
+</div>
 </template>
 <script>
-import Table from '../components/Table.vue';
-import Form from '../components/Form.vue';
+import Table from "../components/Table.vue";
+import Form from "../components/Form.vue";
 export default {
-    components: { Table , Form },
+  components: { Table, Form },
 
-        data() {
-        return {
-            clientes: [],
-            openForm:false,
-            openTable:true
-        };
+  data() {
+    return {
+        refresh: false,
+        clientes: [],
+        openForm: false,
+        openTable: true,
+    };
+  },
+
+  methods: {
+    crear() {
+      this.openForm = true;
+      this.openTable = false;
     },
-
-    methods: {
-
-        crear(){
-            this.openForm = true
-            this.openTable = false
-        },
-    }
+  },
 };
 </script>
 

@@ -40,13 +40,20 @@ export default {
     created(){
         this.getClientes()
     },
-
+    props: {
+        refresh: Boolean,
+    },
     data() {
         return {
             clientes: []
         };
     },
-
+    watch: { 
+        refresh: function(newVal, oldVal) {
+            // watch it
+            console.log('Prop changed: ', newVal, ' | was: ', oldVal)
+        }
+    },
     methods: {
         getClientes() {
             let me = this;

@@ -65,20 +65,20 @@ export default {
 
     methods:{
         registrarCliente(){
-                let me = this;
-                axios.post('/clientes/registrar',{
-                    'cedula': this.cedula,
-                    'nombre': this.nombre,
-                    'telefono': this.telefono,
-                    'direccion': this.direccion,
-                    'estado': this.status,
-                }).then(function (response) {
-                    console.log('ok');
-                    me.$router.go(-1)
-                }).catch(function (error) {
-                    console.log(error);
-                });
-            },
+            let me = this;
+            axios.post('/clientes/registrar',{
+                'cedula': this.cedula,
+                'nombre': this.nombre,
+                'telefono': this.telefono,
+                'direccion': this.direccion,
+                'estado': this.status,
+            }).then(function (response) {
+                console.log('ok', response);
+                this.$emit('refresh');
+            }).catch(function (error) {
+                console.log(error);
+            });
+        },
 
         saludo(){
             alert('hola')
