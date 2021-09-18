@@ -54,45 +54,28 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Form",
   props: {
-    valor: true
+    valor: true,
+    cliente: Object
+  },
+  mounted: function mounted() {
+    if (this.cliente) {
+      Object.assign(this.form, this.cliente);
+    }
   },
   data: function data() {
     return {
-      cedula: "",
-      nombre: "",
-      telefono: "",
-      direccion: "",
       estados: ["Soltero", "Viudo", "Casado"],
-      status: ""
+      form: {
+        cedula: "",
+        nombre: "",
+        telefono: "",
+        direccion: "",
+        status: ""
+      }
     };
-  },
-  methods: {
-    registrarCliente: function registrarCliente() {
-      var me = this;
-      axios.post('/clientes/registrar', {
-        'cedula': this.cedula,
-        'nombre': this.nombre,
-        'telefono': this.telefono,
-        'direccion': this.direccion,
-        'estado': this.status
-      }).then(function (response) {
-        console.log('ok');
-        me.$router.go(-1);
-      })["catch"](function (error) {
-        console.log(error);
-      });
-    },
-    saludo: function saludo() {
-      alert('hola');
-    }
   }
 });
 
@@ -143,41 +126,24 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Table",
-  created: function created() {
-    this.getClientes();
+  props: {
+    clientes: Array
   },
   data: function data() {
-    return {
-      clientes: []
+    return {//   clientes: [],
     };
   },
-  methods: {
-    getClientes: function getClientes() {
-      var me = this;
-      var url = "/clientes/index";
-      axios.get(url).then(function (response) {
-        me.clientes = response.data;
-      })["catch"](function (error) {
-        console.log(error);
-      });
-    },
-    deleteCliente: function deleteCliente(id) {
-      var me = this;
-      axios.put('/clientes/eliminar', {
-        'id': id
-      }).then(function (response) {
-        if (response.data === 1) {
-          me.getClientes();
-        }
-
-        console.log("eliminado con exito");
-      })["catch"](function (error) {
-        console.log(error);
-      });
-    }
-  }
+  methods: {}
 });
 
 /***/ }),
@@ -211,6 +177,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
@@ -220,15 +192,88 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      clientes: [],
+      refresh: false,
       openForm: false,
-      openTable: true
+      openTable: true,
+      clientes: [],
+      cliente: null
     };
   },
+  created: function created() {
+    this.getClientes();
+  },
   methods: {
-    crear: function crear() {
-      this.openForm = true;
-      this.openTable = false;
+    toggle: function toggle() {
+      this.openForm = !this.openForm;
+      this.openTable = !this.openTable;
+    },
+    registrarCliente: function registrarCliente(cliente) {
+      var me = this;
+      axios.post('/clientes/registrar', {
+        'cedula': cliente.cedula,
+        'nombre': cliente.nombre,
+        'telefono': cliente.telefono,
+        'direccion': cliente.direccion,
+        'estado': cliente.status
+      }).then(function (response) {
+        if (response) {
+          me.toggle();
+          me.getClientes();
+        }
+      })["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    getClientes: function getClientes() {
+      var me = this;
+      var url = "/clientes/index";
+      axios.get(url).then(function (response) {
+        me.clientes = response.data;
+        console.log(me.clientes, 'me.clientes');
+      })["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    deleteCliente: function deleteCliente(id) {
+      console.log(id, 'id');
+      var me = this;
+      axios.put("/clientes/eliminar", {
+        id: id
+      }).then(function (response) {
+        if (response.data === 1) {
+          me.getClientes();
+        }
+
+        console.log("eliminado con exito");
+      })["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    editCliente: function editCliente(cliente) {
+      var me = this;
+      axios.post('/clientes/editar', {
+        'cedula': cliente.cedula,
+        'nombre': cliente.nombre,
+        'telefono': cliente.telefono,
+        'direccion': cliente.direccion,
+        'estado': cliente.status
+      }).then(function (response) {
+        if (response) {
+          me.toggle();
+          me.getClientes();
+        }
+      })["catch"](function (error) {
+        console.log(error);
+      });
+    },
+    pasarDatos: function pasarDatos(id) {
+      this.toggle();
+      console.log(this.clientes[0], '0000');
+      this.cliente = this.clientes.find(function (cliente) {
+        return cliente.id === id;
+      });
+      console.log(id, 'id');
+      console.log(this.cliente);
     }
   }
 });
@@ -468,19 +513,19 @@ var render = function() {
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.cedula,
-                expression: "cedula"
+                value: _vm.form.cedula,
+                expression: "form.cedula"
               }
             ],
             staticClass: "form-control",
             attrs: { type: "text" },
-            domProps: { value: _vm.cedula },
+            domProps: { value: _vm.form.cedula },
             on: {
               input: function($event) {
                 if ($event.target.composing) {
                   return
                 }
-                _vm.cedula = $event.target.value
+                _vm.$set(_vm.form, "cedula", $event.target.value)
               }
             }
           })
@@ -494,19 +539,19 @@ var render = function() {
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.nombre,
-                expression: "nombre"
+                value: _vm.form.nombre,
+                expression: "form.nombre"
               }
             ],
             staticClass: "form-control",
             attrs: { type: "text" },
-            domProps: { value: _vm.nombre },
+            domProps: { value: _vm.form.nombre },
             on: {
               input: function($event) {
                 if ($event.target.composing) {
                   return
                 }
-                _vm.nombre = $event.target.value
+                _vm.$set(_vm.form, "nombre", $event.target.value)
               }
             }
           })
@@ -522,19 +567,19 @@ var render = function() {
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.telefono,
-                expression: "telefono"
+                value: _vm.form.telefono,
+                expression: "form.telefono"
               }
             ],
             staticClass: "form-control",
             attrs: { type: "text" },
-            domProps: { value: _vm.telefono },
+            domProps: { value: _vm.form.telefono },
             on: {
               input: function($event) {
                 if ($event.target.composing) {
                   return
                 }
-                _vm.telefono = $event.target.value
+                _vm.$set(_vm.form, "telefono", $event.target.value)
               }
             }
           })
@@ -550,19 +595,19 @@ var render = function() {
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.direccion,
-                expression: "direccion"
+                value: _vm.form.direccion,
+                expression: "form.direccion"
               }
             ],
             staticClass: "form-control",
             attrs: { type: "text" },
-            domProps: { value: _vm.direccion },
+            domProps: { value: _vm.form.direccion },
             on: {
               input: function($event) {
                 if ($event.target.composing) {
                   return
                 }
-                _vm.direccion = $event.target.value
+                _vm.$set(_vm.form, "direccion", $event.target.value)
               }
             }
           })
@@ -582,8 +627,8 @@ var render = function() {
                 {
                   name: "model",
                   rawName: "v-model",
-                  value: _vm.status,
-                  expression: "status"
+                  value: _vm.form.status,
+                  expression: "form.status"
                 }
               ],
               staticClass: "form-control",
@@ -597,17 +642,20 @@ var render = function() {
                       var val = "_value" in o ? o._value : o.value
                       return val
                     })
-                  _vm.status = $event.target.multiple
-                    ? $$selectedVal
-                    : $$selectedVal[0]
+                  _vm.$set(
+                    _vm.form,
+                    "status",
+                    $event.target.multiple ? $$selectedVal : $$selectedVal[0]
+                  )
                 }
               }
             },
             [
               _c("option", { attrs: { value: "" } }, [_vm._v("SELECCIONE")]),
               _vm._v(" "),
-              _vm._l(_vm.estados, function(estado) {
+              _vm._l(_vm.estados, function(estado, index) {
                 return _c("option", {
+                  key: index,
                   domProps: { textContent: _vm._s(estado) }
                 })
               })
@@ -622,9 +670,13 @@ var render = function() {
         {
           staticClass: "btn btn-primary",
           attrs: { type: "submit" },
-          on: { click: _vm.registrarCliente }
+          on: {
+            click: function($event) {
+              return _vm.$emit("registrarCliente", _vm.form)
+            }
+          }
         },
-        [_vm._v("Crear Cliente")]
+        [_vm._v("\n      Crear Cliente\n    ")]
       )
     ])
   ])
@@ -676,14 +728,26 @@ var render = function() {
                     attrs: { type: "button" },
                     on: {
                       click: function($event) {
-                        return _vm.deleteCliente(cliente.id)
+                        return _vm.$emit("deleteCliente", cliente.id)
                       }
                     }
                   },
                   [_c("i", { staticClass: "icon-trash" })]
                 ),
                 _vm._v(" "),
-                _vm._m(1, true)
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success btn-sm",
+                    attrs: { type: "button" },
+                    on: {
+                      click: function($event) {
+                        return _vm.$emit("editCliente", cliente.id)
+                      }
+                    }
+                  },
+                  [_c("i", { staticClass: "icon-edit" })]
+                )
               ])
             ])
           }),
@@ -711,16 +775,6 @@ var staticRenderFns = [
         _c("th", { attrs: { scope: "col" } }, [_vm._v("Acciones")])
       ])
     ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "button",
-      { staticClass: "btn btn-success btn-sm", attrs: { type: "button" } },
-      [_c("i", { staticClass: "icon-edit" })]
-    )
   }
 ]
 render._withStripped = true
@@ -750,21 +804,46 @@ var render = function() {
       _vm._v(" "),
       _vm.openTable
         ? _c("div", [
-            _c("p", { staticClass: "card-text" }, [_c("Table")], 1),
-            _vm._v(" "),
             _c(
-              "a",
-              {
-                staticClass: "btn btn-primary",
-                attrs: { href: "#" },
-                on: { click: _vm.crear }
-              },
-              [_vm._v("Crear Cliente")]
+              "p",
+              { staticClass: "card-text" },
+              [
+                _c("Table", {
+                  attrs: { clientes: _vm.clientes },
+                  on: {
+                    deleteCliente: function($event) {
+                      return _vm.deleteCliente($event)
+                    },
+                    editCliente: function($event) {
+                      return _vm.pasarDatos($event)
+                    }
+                  }
+                })
+              ],
+              1
             )
           ])
         : _vm._e(),
       _vm._v(" "),
-      _vm.openForm ? _c("div", [_c("Form")], 1) : _vm._e()
+      _vm.openForm
+        ? _c(
+            "div",
+            [
+              _c("Form", {
+                attrs: { cliente: _vm.cliente },
+                on: {
+                  registrarCliente: function($event) {
+                    return _vm.registrarCliente($event)
+                  },
+                  editCliente: function($event) {
+                    return _vm.editCliente($event)
+                  }
+                }
+              })
+            ],
+            1
+          )
+        : _vm._e()
     ])
   ])
 }

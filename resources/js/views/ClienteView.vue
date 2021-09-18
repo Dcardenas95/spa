@@ -4,12 +4,19 @@
         <h3 class="card-title">Clientes</h3>
         <div v-if="openTable">
             <p class="card-text">
-                <Table :refresh="refresh"/>
+                <Table
+                  :clientes="clientes"
+                  @deleteCliente="deleteCliente($event)"
+                  @editCliente="pasarDatos($event)"
+                />
             </p>
-            <a href="#" class="btn btn-primary" @click="crear">Crear Cliente</a>
         </div>
         <div v-if="openForm">
-            <Form @refresh="refresh = !refresh" />
+            <Form
+              :cliente="cliente"
+              @registrarCliente="registrarCliente($event)"
+              @editCliente="editCliente($event)"
+            />
         </div>
     </div>
 </div>
@@ -23,17 +30,91 @@ export default {
   data() {
     return {
         refresh: false,
-        clientes: [],
         openForm: false,
         openTable: true,
+        clientes: [],
+        cliente: null,
     };
   },
-
+  created() {
+    this.getClientes();
+  },
   methods: {
-    crear() {
-      this.openForm = true;
-      this.openTable = false;
+    toggle() {
+      this.openForm = !this.openForm;
+      this.openTable = !this.openTable;
     },
+    registrarCliente(cliente){
+        let me = this;
+        axios.post('/clientes/registrar',{
+            'cedula': cliente.cedula,
+            'nombre': cliente.nombre,
+            'telefono': cliente.telefono,
+            'direccion': cliente.direccion,
+            'estado': cliente.status,
+        }).then(function (response) {
+          if(response) {
+            me.toggle();
+            me.getClientes();
+          }
+        }).catch(function (error) {
+            console.log(error);
+        });
+    },
+    getClientes() {
+      let me = this;
+      var url = "/clientes/index";
+      axios
+        .get(url)
+        .then(function (response) {
+          me.clientes = response.data;
+          console.log(me.clientes, 'me.clientes');
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+    deleteCliente(id) {
+      console.log(id, 'id');
+      let me = this;
+      axios
+        .put("/clientes/eliminar", {
+          id: id,
+        })
+        .then(function (response) {
+          if (response.data === 1) {
+            me.getClientes();
+          }
+          console.log(`eliminado con exito`);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    },
+    editCliente(cliente) {
+        let me = this;
+        axios.post('/clientes/editar',{
+            'cedula': cliente.cedula,
+            'nombre': cliente.nombre,
+            'telefono': cliente.telefono,
+            'direccion': cliente.direccion,
+            'estado': cliente.status,
+        }).then(function (response) {
+          if(response) {
+            me.toggle();
+            me.getClientes();
+          }
+        }).catch(function (error) {
+            console.log(error);
+        });
+    },
+    pasarDatos(id) {
+      this.toggle()
+      console.log(this.clientes[0], '0000')
+      this.cliente = this.clientes.find(cliente => cliente.id === id)
+      console.log(id, 'id')
+      console.log(this.cliente)
+    }
   },
 };
 </script>
